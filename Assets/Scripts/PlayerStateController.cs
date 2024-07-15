@@ -9,7 +9,8 @@ public class StateShareData
     public PlayerController MyController;
     
     public float MoveSpeed = 0.0f;
-    
+
+    public bool IsCrounching = false;
     public bool IsJumping = false;
     public bool IsSliding = false;
     public bool IsAirCondition = false;
@@ -54,7 +55,7 @@ public class PlayerStateController
             ShareData.MyController.aim.weight = 1.0f;
             ShareData.MyController.bodyAim.weight = 1.0f;
         }
-        
+        ReleaseCameraDistance();
         ShareData.MyController.animator.SetBool(PlayerAnimHashingTable.AimingMode,ShareData.IsAiming);
     }
     private void MoveApply()
@@ -126,8 +127,6 @@ public class PlayerStateController
                 return new PlayerSliding();
             case PlayerState.Crouch:
                 return new PlayerCrouch();
-            case PlayerState.Aiming:
-                return new PlayerAiming();
         }
 
         return null;
@@ -143,15 +142,24 @@ public class PlayerStateController
     }
     protected void InputCrouch()
     {
-        if (Input.GetKeyDown(KeyCode.LeftControl))
+        if (Input.GetKeyDown(KeyCode.LeftControl) && ShareData.IsCrounching)
         {
+            ShareData.IsCrounching = false;
+            ShareData.MyController.ChangeState(PlayerState.Idle);
+            ShareData.MyController.animator.SetBool(PlayerAnimHashingTable.Crouch,ShareData.IsCrounching);
+        }
+        else if (Input.GetKeyDown(KeyCode.LeftControl) && !ShareData.IsCrounching)
+        {
+            ShareData.IsCrounching = true;
             ShareData.MyController.ChangeState(PlayerState.Crouch);
+            ShareData.MyController.animator.SetBool(PlayerAnimHashingTable.Crouch,ShareData.IsCrounching);
         }
     }
     protected void InputSprint()
     {
         if (Input.GetKeyDown(KeyCode.LeftShift))
         {
+            ReleaseCrouch();
             ReleaseAim();
             ShareData.MyController.ChangeState(PlayerState.Run);
         }
@@ -171,25 +179,31 @@ public class PlayerStateController
     {
         ShareData.MyController.ChangeState(PlayerState.Walk);
     }
+    //aiming 상태가 가능한 때 : idle, walk, crouch, jump
     protected void InputAiming()
     {
         if (ShareData.IsAiming)
         {
-            ShareData.MyController.ChangeState(PlayerState.Aiming);
+            ShareData.MyController.ChangeState(PlayerState.Idle);
         }
     }
     protected void AirCheck()
     {
-
         if (!ShareData.MyController.character.isGrounded && !ShareData.IsAirCondition)
         {
             ShareData.MyController.ChangeState(PlayerState.Jump, true);
         }
     }
-    protected void ReleaseCameraDistance()
+    
+    
+    private void ReleaseCameraDistance()
     {
-        const float blendTime = 5.0f; 
-        ShareData.MyController.cameraController._distance.CameraDistance = Mathf.Lerp(ShareData.MyController.cameraController._distance.CameraDistance,2.0f,blendTime*Time.deltaTime);
+        const float blendTime = 5.0f;
+        ShareData.MyController.cameraController._distance.CameraDistance = ShareData.IsAiming
+            ? Mathf.Lerp(ShareData.MyController.cameraController._distance.CameraDistance, 3.0f,
+                blendTime * Time.deltaTime)
+            : Mathf.Lerp(ShareData.MyController.cameraController._distance.CameraDistance, 2.0f,
+                blendTime * Time.deltaTime);
     }
     private void ReleaseAim()
     {
@@ -199,6 +213,14 @@ public class PlayerStateController
             ShareData.IsAiming = false;
             ShareData.MyController.aim.weight = 0.0f;
             ShareData.MyController.bodyAim.weight = 0.0f;
+        }
+    }
+    private void ReleaseCrouch()
+    {
+        if (ShareData.IsCrounching)
+        {
+            ShareData.IsCrounching = false;
+            ShareData.MyController.animator.SetBool(PlayerAnimHashingTable.Crouch,ShareData.IsCrounching);
         }
     }
 }
@@ -220,8 +242,6 @@ public class PlayerStateController
             {
                 InputWalk();
             }
-            ReleaseCameraDistance();
-            InputAiming();
             InputJump();
             InputCrouch();
 
@@ -231,18 +251,25 @@ public class PlayerStateController
     //Walk에서 변경 가능한 상태 : walk -> idle / walk -> jump / walk -> run / walk -> crouch
     class PlayerWalk : PlayerStateController
     {
-        private const float WalkSpeed = 3.0f; 
+        private const float WalkSpeed = 3.0f;
+        private const float AimingWalkSpeed = 2.0f;
         private const float BlendTime = 5.0f;
         public override void StatePlay()
         {
             base.StatePlay();
             //다른 상태에서 walk 상태로의 속도 블렌딩
-            ShareData.MoveSpeed = Mathf.Lerp(ShareData.MoveSpeed,WalkSpeed,BlendTime*Time.deltaTime);
+            if (ShareData.IsAiming)
+            {
+                ShareData.MoveSpeed = Mathf.Lerp(ShareData.MoveSpeed,AimingWalkSpeed,BlendTime*Time.deltaTime);
+            }
+            else
+            {
+                ShareData.MoveSpeed = Mathf.Lerp(ShareData.MoveSpeed,WalkSpeed,BlendTime*Time.deltaTime);
+            }
             
             //이동값의 값이 존재한다면 walk 혹은 shift가 눌렸다면 run으로 상태변화.
             if (ShareData.MoveDir.magnitude != 0)     
             {
-                InputAiming();
                 InputSprint();
                 InputCrouch();
                 InputJump();
@@ -253,7 +280,6 @@ public class PlayerStateController
             {
                 InputIdle();
             }
-            ReleaseCameraDistance();
             AirCheck();
         }
     }
@@ -291,7 +317,6 @@ public class PlayerStateController
         public override void StatePlay()
         {
             base.StatePlay();
-            ReleaseCameraDistance();
             //플레이어가 자체적으로 점프를 하였을 경우 실행.
             if (!ShareData.IsJumping && !ShareData.IsAirCondition)
             {
@@ -311,15 +336,26 @@ public class PlayerStateController
     //Crouch에서 변경 가능한 상태 : Crouch -> Idle / Crouch -> Walk / Crouch -> Run
     class PlayerCrouch : PlayerStateController
     {
-        private float _crouchSpeed = 2.0f; 
+        private const float IdleValue = 0.0f;
+        private const float CrouchSpeed = 2.0f;
+        private const float AimingCrouchSpeed = 1.5f;
+        private const float BlendTime = 7.0f;
         public override void StatePlay()
         {
             base.StatePlay();
-            ShareData.MoveSpeed = _crouchSpeed;
-            if (Input.GetKeyUp(KeyCode.LeftControl))
+
+            if (ShareData.MoveDir.magnitude != 0)
             {
-                ShareData.MyController.ChangeState(PlayerState.Idle);
+                ShareData.MoveSpeed = ShareData.IsAiming
+                    ? Mathf.Lerp(ShareData.MoveSpeed, AimingCrouchSpeed, BlendTime * Time.deltaTime)
+                    : Mathf.Lerp(ShareData.MoveSpeed, CrouchSpeed, BlendTime * Time.deltaTime);
             }
+            else
+            {
+                ShareData.MoveSpeed = Mathf.Lerp(ShareData.MoveSpeed,IdleValue,BlendTime*Time.deltaTime);
+            }
+            InputSprint();
+            InputCrouch();
             
             AirCheck();
         }
@@ -336,31 +372,6 @@ public class PlayerStateController
             }
             InputJump();
             AirCheck();
-        }
-    }
-    //Aiming에서 변경 가능한 상태 : Aiming -> Idle / Aiming -> Run / Aiming -> Jump
-    class PlayerAiming : PlayerStateController
-    {
-        
-        private const float AimMoveSpeed = 1.5f;
-        public override void StatePlay()
-        {
-            base.StatePlay();
-            
-            ShareData.MoveSpeed = AimMoveSpeed;
-
-            ShareData.MyController.animator.SetFloat(PlayerAnimHashingTable.InputX, ShareData.MoveDir.x);
-            ShareData.MyController.animator.SetFloat(PlayerAnimHashingTable.InputZ, ShareData.MoveDir.z);
-
-            if (!ShareData.IsAiming)
-            {
-                InputIdle();
-            }
-            
-            InputSprint();
-            InputJump();
-            ReleaseCameraDistance();
-            
         }
     }
     

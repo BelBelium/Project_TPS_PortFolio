@@ -20,6 +20,7 @@ public static class PlayerAnimHashingTable
     public static readonly int AimingMode = Animator.StringToHash("AimingMode");
     public static readonly int InputX = Animator.StringToHash("InputX");
     public static readonly int InputZ = Animator.StringToHash("InputZ");
+    public static readonly int Crouch = Animator.StringToHash("Crouching");
 }
 
 public enum PlayerState
@@ -30,7 +31,6 @@ public enum PlayerState
     Jump,
     Crouch,
     Sliding,
-    Aiming,
     End
 }
 
@@ -80,6 +80,12 @@ public class PlayerController : MonoBehaviour
 
     void Update()
     {
+
+        //사격
+        if (Input.GetMouseButton(0))
+        {
+            
+        }
         
         //캐릭터의 현재 상태 실행.
         _curPlayerState.StatePlay();
@@ -88,6 +94,9 @@ public class PlayerController : MonoBehaviour
         character.Move(_curPlayerState.ShareData.MoveSpeed * Time.deltaTime * _curPlayerState.ShareData.MovePos.normalized +
                         PlayerStateController.GravityAcc * Time.deltaTime * _curPlayerState.ShareData.GravityDir);
         animator.SetFloat(PlayerAnimHashingTable.MoveSpeedParam,_curPlayerState.ShareData.MoveSpeed);
+        
+        
+        
         //Debug.Log(_curPlayerState);
     }
     

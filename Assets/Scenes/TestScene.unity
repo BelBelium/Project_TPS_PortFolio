@@ -434,7 +434,7 @@ MonoBehaviour:
   m_StreamingVersion: 20170927
   m_Priority: 20
   m_StandbyUpdate: 2
-  m_LookAt: {fileID: 0}
+  m_LookAt: {fileID: 1052323874}
   m_Follow: {fileID: 1052323874}
   m_Lens:
     FieldOfView: 40
@@ -701,7 +701,6 @@ GameObject:
   - component: {fileID: 708610361}
   - component: {fileID: 708610360}
   - component: {fileID: 708610358}
-  - component: {fileID: 708610362}
   m_Layer: 0
   m_Name: PlayerFollowCamera
   m_TagString: Untagged
@@ -730,7 +729,7 @@ MonoBehaviour:
   m_LookAt: {fileID: 0}
   m_Follow: {fileID: 1052323874}
   m_Lens:
-    FieldOfView: 40
+    FieldOfView: 50
     OrthographicSize: 10
     NearClipPlane: 0.1
     FarClipPlane: 5000
@@ -815,24 +814,6 @@ Transform:
   - {fileID: 847571184}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 15, y: 0, z: 0}
---- !u!114 &708610362
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 708610357}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 2588cc5dedbb75e49a44aada63f7b939, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  AimCollisionFilter:
-    serializedVersion: 2
-    m_Bits: 1
-  IgnoreTag: 
-  AimDistance: 200
-  AimTargetReticle: {fileID: 1649952443}
 --- !u!1 &847571183
 GameObject:
   m_ObjectHideFlags: 3
@@ -1091,10 +1072,6 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 527508632}
     - target: {fileID: 988652369597079018, guid: 4f0f0b98bdacaf44ebfa8a0de56bfe9a, type: 3}
-      propertyPath: debugTransform
-      value: 
-      objectReference: {fileID: 1701408016}
-    - target: {fileID: 988652369597079018, guid: 4f0f0b98bdacaf44ebfa8a0de56bfe9a, type: 3}
       propertyPath: cameraController
       value: 
       objectReference: {fileID: 2091327346}
@@ -1103,8 +1080,7 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 1701408016}
     m_RemovedComponents: []
-    m_RemovedGameObjects:
-    - {fileID: 4865541059525084525, guid: 4f0f0b98bdacaf44ebfa8a0de56bfe9a, type: 3}
+    m_RemovedGameObjects: []
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 4f0f0b98bdacaf44ebfa8a0de56bfe9a, type: 3}
@@ -1118,7 +1094,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1479301365}
   - component: {fileID: 1479301368}
-  - component: {fileID: 1479301367}
+  - component: {fileID: 1479301369}
   m_Layer: 0
   m_Name: cm
   m_TagString: Untagged
@@ -1141,30 +1117,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 527508635}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &1479301367
-MonoBehaviour:
-  m_ObjectHideFlags: 3
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1479301364}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: bd6043bde05a7fc4cba197d06915c1e3, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  Damping: {x: 0.1, y: 0.5, z: 0.3}
-  ShoulderOffset: {x: 0.5, y: -0.3, z: 0}
-  VerticalArmLength: 0.5
-  CameraSide: 1
-  CameraDistance: 1
-  CameraCollisionFilter:
-    serializedVersion: 2
-    m_Bits: 64
-  IgnoreTag: 
-  CameraRadius: 0.2
-  DampingIntoCollision: 0
-  DampingFromCollision: 2
 --- !u!114 &1479301368
 MonoBehaviour:
   m_ObjectHideFlags: 3
@@ -1177,6 +1129,30 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ac0b09e7857660247b1477e93731de29, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!114 &1479301369
+MonoBehaviour:
+  m_ObjectHideFlags: 3
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1479301364}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bd6043bde05a7fc4cba197d06915c1e3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  Damping: {x: 0.1, y: 0.5, z: 0.3}
+  ShoulderOffset: {x: 0.5, y: -0.4, z: 0}
+  VerticalArmLength: 0.4
+  CameraSide: 1
+  CameraDistance: 2
+  CameraCollisionFilter:
+    serializedVersion: 2
+    m_Bits: 0
+  IgnoreTag: 
+  CameraRadius: 0.2
+  DampingIntoCollision: 0
+  DampingFromCollision: 2
 --- !u!1 &1519703707
 GameObject:
   m_ObjectHideFlags: 0
@@ -1633,7 +1609,7 @@ Camera:
     height: 1
   near clip plane: 0.1
   far clip plane: 5000
-  field of view: 40
+  field of view: 50
   orthographic: 0
   orthographic size: 10
   m_Depth: 0
